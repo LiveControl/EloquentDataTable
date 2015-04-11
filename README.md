@@ -10,7 +10,7 @@ If you are familiar with eloquent and would like to use it in combination with [
 
 ### Step 2: Use it!
 ```php
-$users = new \App\User();
+$users = new User();
 $dataTable = new \LiveControl\EloquentDataTable\DataTable();
 return response()->toJson($dataTable->make($users, ['email', 'firstname', 'lastname']));
 ```
@@ -19,6 +19,8 @@ return response()->toJson($dataTable->make($users, ['email', 'firstname', 'lastn
 
 - [Basic setup](#basic-example)
 - [Combining columns](#combining-columns)
+- [Using raw column queries](#using-raw-column-queries)
+- [Return custom row format](#return-custom-row-format)
 
 ### Basic example
 ```php
@@ -27,14 +29,19 @@ namespace Acme;
 use LiveControl\EloquentDataTable\DataTable;
 
 class UserController {
-  $users = new \App\User();
-  $dataTable = new DataTable();
-  return response()->json(
-    $dataTable->make(
-      $users->where('city', '=', 'London'),
-      ['email', 'firstname', 'lastname']
-    )
-  );
+  ...
+  public function datatable()
+  {
+    $users = new User();
+    $dataTable = new DataTable();
+    
+    return response()->json(
+      $dataTable->make(
+        $users->where('city', '=', 'London'),
+        ['email', 'firstname', 'lastname']
+      )
+    );
+  }
 }
 ```
 In this case we are making a datatable response with all users who live in London.
@@ -47,17 +54,90 @@ namespace Acme;
 use LiveControl\EloquentDataTable\DataTable;
 
 class UserController {
-  $users = new \App\User();
-  $dataTable = new DataTable();
-  return response()->json(
-    $dataTable->make(
-      $users,
-      [
-        'email',
-        ['firstname', 'lastname'],
-        'city'
-      ]
-    )
-  );
+  ...
+  public function datatable()
+  {
+    $users = new User();
+    $dataTable = new DataTable();
+    
+    return response()->json(
+      $dataTable->make(
+        $users,
+        [
+          'email',
+          ['firstname', 'lastname'],
+          'city'
+        ]
+      )
+    );
+  }
+}
+```
+### Using raw column queries
+Sometimes you want to use custom sql statements on a column to get specific results,
+this can be achieved using the `ExpressionWithName` class.
+```php
+namespace Acme;
+
+use LiveControl\EloquentDataTable\DataTable;
+use LiveControl\EloquentDataTable\ExpressionWithName;
+
+class UserController {
+  ...
+  public function datatable()
+  {
+    $users = new User();
+    $dataTable = new DataTable();
+    
+    return response()->json(
+      $dataTable->make(
+        $users,
+        [
+          'email',
+          new ExpressionWithName('`id` + 1000', 'idPlus1000'),
+          'city'
+        ]
+      )
+    );
+  }
+}
+```
+
+### Return custom row format
+If you would like to return a custom row format you can do this by adding an anonymous function as an extra argument to the make method.
+```php
+namespace Acme;
+
+use LiveControl\EloquentDataTable\DataTable;
+use LiveControl\EloquentDataTable\ExpressionWithName;
+
+class UserController {
+  ...
+  public function datatable()
+  {
+    $users = new User();
+    $dataTable = new DataTable();
+    
+    return response()->json(
+      $dataTable->make(
+        $users,
+        [
+          'id',
+          ['firstname', 'lastname'],
+          'email',
+          'city'
+        ],
+        function ($user) {
+          $row = [];
+          $row[] = $user->id;
+          $row[] = '<a href="/users/'.$user->id.'">.$user->firstnameLastname.'</a>';
+          $row[] = '<a href="mailto:'.$user->email.'">.$user->email.'</a>';
+          $row[] = $user->city;
+          $row[] = '<a href="/users/delete/'.$user->id.'">&times;</a>';
+          return $row;
+        }
+      )
+    );
+  }
 }
 ```
