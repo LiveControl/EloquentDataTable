@@ -21,6 +21,10 @@ class EloquentDataTableServiceProvider extends ServiceProvider {
 		//
 	}
 
+	public function boot(){
+		$this->package('livecontrol/eloquent-database');
+	}
+
 	/**
 	 * Get the services provided by the provider.
 	 *

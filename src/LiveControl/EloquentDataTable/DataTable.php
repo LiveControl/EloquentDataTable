@@ -23,8 +23,6 @@ class DataTable
     private $filtered = 0;
 
     private $rows = [];
-
-    private $dbConnectionType = 'sqlite';
     
     public function setVersionTransformer(VersionTransformerContract $versionTransformer)
     {
@@ -146,13 +144,17 @@ class DataTable
         }
 
         if ( is_array($column) ) {
-            if ( $this->dbConnectionType == 'sqlite' ) {
+            if ( $this->getDatabaseDriver() == 'sqlite' ) {
                 return '(' . implode(' || " " || ', $this->getRawColumns($column)) . ')';
             }
             return 'CONCAT(' . implode(', " ", ', $this->getRawColumns($column)) . ')';
         }
 
         return '`' . str_replace('.', '`.`', $column) . '`'; // user.firstname => `user`.`firstname`
+    }
+
+    private function getDatabaseDriver() {
+        return Model::resolveConnection()->getDriverName();
     }
 
     private function addSelect()
