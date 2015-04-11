@@ -1,5 +1,5 @@
 {
-    "name": "live-control/eloquent-data-table",
+    "name": "livecontrol/eloquent-datatable",
     "description": "Eloquent DataTable plugin for server side ajax call handling.",
     "keywords": [
         "eloquent",
