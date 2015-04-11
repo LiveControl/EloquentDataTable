@@ -5,6 +5,7 @@
         "eloquent",
         "datatable"
     ],
+    "license": "MIT",
     "authors": [
         {
             "name": "Jeffrey de Vreede",
