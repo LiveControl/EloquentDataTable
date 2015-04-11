@@ -29,7 +29,7 @@ use LiveControl\EloquentDataTable\DataTable;
 class UserController {
   $users = new \App\User();
   $dataTable = new DataTable();
-  return response()->toJson(
+  return response()->json(
     $dataTable->make(
       $users->where('city', '=', 'London'),
       ['email', 'firstname', 'lastname']
@@ -49,7 +49,7 @@ use LiveControl\EloquentDataTable\DataTable;
 class UserController {
   $users = new \App\User();
   $dataTable = new DataTable();
-  return response()->toJson(
+  return response()->json(
     $dataTable->make(
       $users,
       [
