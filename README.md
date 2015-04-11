@@ -10,9 +10,9 @@ If you are familiar with eloquent and would like to use it in combination with [
 
 ### Step 2: Use it!
 ```php
-$users = new User();
+$users = new Models\User();
 $dataTable = new \LiveControl\EloquentDataTable\DataTable();
-return response()->toJson($dataTable->make($users, ['email', 'firstname', 'lastname']));
+echo json_encode($dataTable->make($users, ['email', 'firstname', 'lastname']));
 ```
 
 ## Examples
