@@ -1,5 +1,5 @@
 <?php
-namespace App\LiveControl\EloquentDataTable;
+namespace LiveControl\EloquentDataTable;
 
 use Illuminate\Database\Query\Expression;
 
