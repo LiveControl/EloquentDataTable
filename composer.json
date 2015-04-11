@@ -1,0 +1,27 @@
+{
+    "name": "live-control/eloquent-data-table",
+    "description": "Eloquent DataTable plugin for server side ajax call handling.",
+    "keywords": [
+        "eloquent",
+        "datatable"
+    ]
+    "authors": [
+        {
+            "name": "Jeffrey de Vreede",
+            "email": "jeffrey@devreede.eu"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "illuminate/database": "5.*"
+    },
+    "require-dev": {
+        "phpspec/phpspec": "~2.1"
+    },
+    "autoload": {
+        "psr-0": {
+            "LiveControl\\EloquentDataTable": "src/"
+        }
+    },
+    "minimum-stability": "stable"
+}

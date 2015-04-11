@@ -1,0 +1,5 @@
+suites:
+  livecontrol_suite:
+    namespace: LiveControl
+    src_path: src
+    spec_prefix: spec
