@@ -130,8 +130,8 @@ class UserController {
         function ($user) {
           $row = [];
           $row[] = $user->id;
-          $row[] = '<a href="/users/'.$user->id.'">.$user->firstnameLastname.'</a>';
-          $row[] = '<a href="mailto:'.$user->email.'">.$user->email.'</a>';
+          $row[] = '<a href="/users/'.$user->id.'">'.$user->firstnameLastname.'</a>';
+          $row[] = '<a href="mailto:'.$user->email.'">'.$user->email.'</a>';
           $row[] = $user->city;
           $row[] = '<a href="/users/delete/'.$user->id.'">&times;</a>';
           return $row;
