@@ -1,4 +1,4 @@
-# EloquentDataTable
+# EloquentDataTable ![Build status](https://travis-ci.org/LiveControl/EloquentDataTable.svg?branch=master)
 Eloquent compatible DataTable plugin for server side ajax call handling.
 
 If you are familiar with eloquent and would like to use it in combination with [datatables](https://www.datatables.net/) this is what you are looking for.
