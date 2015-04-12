@@ -24,8 +24,6 @@ echo json_encode($dataTable->make());
 
 ### Basic example
 ```php
-namespace Acme;
-
 use LiveControl\EloquentDataTable\DataTable;
 
 class UserController {
@@ -47,8 +45,6 @@ In this case we are making a datatable response with all users who live in Londo
 ### Combining columns
 If you want to combine the firstname and lastname into one column, you can wrap them into an array.
 ```php
-namespace Acme;
-
 use LiveControl\EloquentDataTable\DataTable;
 
 class UserController {
@@ -57,8 +53,8 @@ class UserController {
   {
     $users = new User();
     $dataTable = new DataTable(
-      $users
-      ['email', ['firstname', 'lastname'], 'city'],
+      $users,
+      ['email', ['firstname', 'lastname'], 'city']
     );
     
     return response()->json($dataTable->make());
@@ -69,8 +65,6 @@ class UserController {
 Sometimes you want to use custom sql statements on a column to get specific results,
 this can be achieved using the `ExpressionWithName` class.
 ```php
-namespace Acme;
-
 use LiveControl\EloquentDataTable\DataTable;
 use LiveControl\EloquentDataTable\ExpressionWithName;
 
@@ -96,8 +90,6 @@ class UserController {
 ### Return custom row format
 If you would like to return a custom row format you can do this by adding an anonymous function as an extra argument to the make method.
 ```php
-namespace Acme;
-
 use LiveControl\EloquentDataTable\DataTable;
 use LiveControl\EloquentDataTable\ExpressionWithName;
 
