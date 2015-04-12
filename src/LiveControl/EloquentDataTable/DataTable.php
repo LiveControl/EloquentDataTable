@@ -13,7 +13,7 @@ class DataTable
     private $builder;
     private $columns;
     private $formatRowFunction;
-    
+
     protected static $versionTransformer;
 
     private $rawColumns;
@@ -33,7 +33,29 @@ class DataTable
         static::$versionTransformer = $versionTransformer;
         return $this;
     }
-    
+
+    /**
+     * @param Builder|Model $builder
+     * @throws Exception
+     */
+    public function setBuilder($builder)
+    {
+        if ( ! ($builder instanceof Builder || $builder instanceof Model) ) {
+            throw new Exception('$builder variable is not an instance of Builder or Model.');
+        }
+
+        $this->builder = $builder;
+    }
+
+    /**
+     * @param mixed $columns
+     */
+    public function setColumns($columns)
+    {
+        $this->columns = $columns;
+    }
+
+
     /**
      * @param Builder|Model $builder An eloquent model or eloquent builder.
      * @param array $columns An array of columns which to return and to make searchable.
@@ -41,15 +63,17 @@ class DataTable
      * @return array
      * @throws Exception
      */
-    public function make($builder, $columns, $formatRowFunction = null)
+    public function make($builder = null, $columns = null, $formatRowFunction = null)
     {
-        if ( ! ($builder instanceof Builder || $builder instanceof Model) ) {
-            throw new Exception('$builder variable is not an instance of Builder or Model.');
+        if ( $builder !== null ) {
+            $this->setBuilder($builder);
         }
-        
-        $this->builder = $builder;
-        $this->columns = $columns;
-        if($formatRowFunction !== null) {
+
+        if ( $columns !== null ) {
+            $this->columns = $columns;
+        }
+
+        if ( $formatRowFunction !== null ) {
             $this->formatRowFunction = $formatRowFunction;
         }
 
@@ -58,8 +82,7 @@ class DataTable
         $this->rawColumns = $this->getRawColumns($this->columns);
         $this->columnNames = $this->getColumnNames();
 
-        if(static::$versionTransformer === null)
-        {
+        if ( static::$versionTransformer === null ) {
             static::$versionTransformer = new Version110Transformer();
         }
 
@@ -165,7 +188,8 @@ class DataTable
         return '`' . str_replace('.', '`.`', $column) . '`'; // user.firstname => `user`.`firstname`
     }
 
-    private function getDatabaseDriver() {
+    private function getDatabaseDriver()
+    {
         return Model::resolveConnection()->getDriverName();
     }
 
@@ -220,7 +244,11 @@ class DataTable
     {
         foreach ($this->rawColumns as $i => $rawColumn) {
             if ( static::$versionTransformer->isColumnSearched($i) ) {
-                $this->builder->where(new raw($rawColumn), 'like', '%' . static::$versionTransformer->getColumnSearchValue($i) . '%');
+                $this->builder->where(
+                    new raw($rawColumn),
+                    'like',
+                    '%' . static::$versionTransformer->getColumnSearchValue($i) . '%'
+                );
             }
         }
     }
@@ -228,9 +256,8 @@ class DataTable
     protected function addOrderBy()
     {
         if ( static::$versionTransformer->isOrdered() ) {
-            foreach(static::$versionTransformer->getOrderedColumns() as $index => $direction)
-            {
-                if(isset($this->rawColumns[$index])) {
+            foreach (static::$versionTransformer->getOrderedColumns() as $index => $direction) {
+                if ( isset($this->rawColumns[$index]) ) {
                     $this->builder->orderBy(
                         new raw($this->rawColumns[$index]),
                         $direction
@@ -242,8 +269,13 @@ class DataTable
 
     private function addLimits()
     {
-        if ( isset($_POST[static::$versionTransformer->transform('start')]) && $_POST[static::$versionTransformer->transform('length')] != '-1' ) {
-            $this->builder->skip((int) $_POST[static::$versionTransformer->transform('start')])->take((int) $_POST[static::$versionTransformer->transform('length')]);
+        if ( isset($_POST[static::$versionTransformer->transform(
+                    'start'
+                )]) && $_POST[static::$versionTransformer->transform('length')] != '-1'
+        ) {
+            $this->builder->skip((int)$_POST[static::$versionTransformer->transform('start')])->take(
+                (int)$_POST[static::$versionTransformer->transform('length')]
+            );
         }
     }
 }
