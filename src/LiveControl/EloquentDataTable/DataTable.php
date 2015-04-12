@@ -23,10 +23,15 @@ class DataTable
     private $filtered = 0;
 
     private $rows = [];
-    
+
+    /**
+     * @param VersionTransformerContract $versionTransformer
+     * @return $this
+     */
     public function setVersionTransformer(VersionTransformerContract $versionTransformer)
     {
         static::$versionTransformer = $versionTransformer;
+        return $this;
     }
     
     /**
@@ -42,19 +47,21 @@ class DataTable
             throw new Exception('$builder variable is not an instance of Builder or Model.');
         }
         
-        if(static::$versionTransformer === null)
-        {
-            static::$versionTransformer = new Version110Transformer();
-        }
-        
         $this->builder = $builder;
         $this->columns = $columns;
-        $this->formatRowFunction = $formatRowFunction;
+        if($formatRowFunction !== null) {
+            $this->formatRowFunction = $formatRowFunction;
+        }
 
         $this->total = $this->builder->count();
 
         $this->rawColumns = $this->getRawColumns($this->columns);
         $this->columnNames = $this->getColumnNames();
+
+        if(static::$versionTransformer === null)
+        {
+            static::$versionTransformer = new Version110Transformer();
+        }
 
         $this->addSelect();
         $this->addFilters();
@@ -82,9 +89,14 @@ class DataTable
         ];
     }
 
+    /**
+     * @param callable $function
+     * @return $this
+     */
     public function setFormatRowFunction($function)
     {
         $this->formatRowFunction = $function;
+        return $this;
     }
 
     private function formatRow($data)
