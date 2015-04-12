@@ -8,7 +8,20 @@ If you are familiar with eloquent and would like to use it in combination with [
 ### Step 1: Install through composer
 ```composer require livecontrol/eloquent-datatable```
 
-### Step 2: Use it!
+### Step 2: Add DataTables javascript and set it up
+For more information check out the [datatables manual](http://datatables.net/manual/index).
+```
+var table = $('#example').DataTable({
+  "processing": true,
+  "serverSide": true,
+  "ajax": {
+    "url": "<url to datatable route>",
+    "type": "POST"
+  }
+});
+```
+
+### Step 3: Use it
 ```php
 $users = new Models\User();
 $dataTable = new \LiveControl\EloquentDataTable\DataTable($users, ['email', 'firstname', 'lastname']);
