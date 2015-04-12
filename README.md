@@ -10,7 +10,7 @@ If you are familiar with eloquent and would like to use it in combination with [
 
 ### Step 2: Add DataTables javascript and set it up
 For more information check out the [datatables manual](http://datatables.net/manual/index).
-```
+```javascript
 var table = $('#example').DataTable({
   "processing": true,
   "serverSide": true,
