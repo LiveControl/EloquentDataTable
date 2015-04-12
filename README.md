@@ -35,12 +35,10 @@ class UserController {
     $users = new User();
     $dataTable = new DataTable();
     
-    return response()->json(
-      $dataTable->make(
-        $users->where('city', '=', 'London'),
-        ['email', 'firstname', 'lastname']
-      )
-    );
+    $dataTable->setBuilder($users->where('city', '=', 'London'));
+    $dataTable->setColumns(['email', 'firstname', 'lastname']);
+    
+    return response()->json($dataTable->make());
   }
 }
 ```
@@ -60,16 +58,10 @@ class UserController {
     $users = new User();
     $dataTable = new DataTable();
     
-    return response()->json(
-      $dataTable->make(
-        $users,
-        [
-          'email',
-          ['firstname', 'lastname'],
-          'city'
-        ]
-      )
-    );
+    $dataTable->setBuilder($users);
+    $dataTable->setColumns(['email', ['firstname', 'lastname'], 'city']);
+    
+    return response()->json($dataTable->make());
   }
 }
 ```
@@ -89,16 +81,14 @@ class UserController {
     $users = new User();
     $dataTable = new DataTable();
     
-    return response()->json(
-      $dataTable->make(
-        $users,
-        [
-          'email',
-          new ExpressionWithName('`id` + 1000', 'idPlus1000'),
-          'city'
-        ]
-      )
-    );
+    $dataTable->setBuilder($users);
+    $dataTable->setColumns([
+      'email',
+      new ExpressionWithName('`id` + 1000', 'idPlus1000'),
+      'city'
+    ]);
+    
+    return response()->json($dataTable->make());
   }
 }
 ```
@@ -118,26 +108,19 @@ class UserController {
     $users = new User();
     $dataTable = new DataTable();
     
-    return response()->json(
-      $dataTable->make(
-        $users,
-        [
-          'id',
-          ['firstname', 'lastname'],
-          'email',
-          'city'
-        ],
-        function ($user) {
-          $row = [];
-          $row[] = $user->id;
-          $row[] = '<a href="/users/'.$user->id.'">'.$user->firstnameLastname.'</a>';
-          $row[] = '<a href="mailto:'.$user->email.'">'.$user->email.'</a>';
-          $row[] = $user->city;
-          $row[] = '<a href="/users/delete/'.$user->id.'">&times;</a>';
-          return $row;
-        }
-      )
-    );
+    $dataTable->setBuilder($users);
+    $dataTable->setColumns(['email', ['firstname', 'lastname'], 'city']);
+    $dataTable->setFormatRowFunction(function ($user) {
+      $row = [];
+      $row[] = $user->id;
+      $row[] = '<a href="/users/'.$user->id.'">'.$user->firstnameLastname.'</a>';
+      $row[] = '<a href="mailto:'.$user->email.'">'.$user->email.'</a>';
+      $row[] = $user->city;
+      $row[] = '<a href="/users/delete/'.$user->id.'">&times;</a>';
+      return $row;
+    });
+    
+    return response()->json($dataTable->make());
   }
 }
 ```
