@@ -25,6 +25,57 @@ class DataTable
     private $rows = [];
 
     /**
+     * @param Builder|Model $builder
+     * @param array $columns
+     * @param null|callable $formatRowFunction
+     * @throws Exception
+     */
+    public function __construct($builder, $columns, $formatRowFunction = null)
+    {
+        $this->setBuilder($builder);
+        $this->setColumns($columns);
+
+        if ( $formatRowFunction !== null ) {
+            $this->setFormatRowFunction($formatRowFunction);
+        }
+    }
+
+    /**
+     * @param Builder|Model $builder
+     * @return $this
+     * @throws Exception
+     */
+    public function setBuilder($builder)
+    {
+        if ( ! ($builder instanceof Builder || $builder instanceof Model) ) {
+            throw new Exception('$builder variable is not an instance of Builder or Model.');
+        }
+
+        $this->builder = $builder;
+        return $this;
+    }
+
+    /**
+     * @param mixed $columns
+     * @return $this
+     */
+    public function setColumns($columns)
+    {
+        $this->columns = $columns;
+        return $this;
+    }
+
+    /**
+     * @param callable $function
+     * @return $this
+     */
+    public function setFormatRowFunction($function)
+    {
+        $this->formatRowFunction = $function;
+        return $this;
+    }
+
+    /**
      * @param VersionTransformerContract $versionTransformer
      * @return $this
      */
@@ -35,48 +86,11 @@ class DataTable
     }
 
     /**
-     * @param Builder|Model $builder
-     * @throws Exception
-     */
-    public function setBuilder($builder)
-    {
-        if ( ! ($builder instanceof Builder || $builder instanceof Model) ) {
-            throw new Exception('$builder variable is not an instance of Builder or Model.');
-        }
-
-        $this->builder = $builder;
-    }
-
-    /**
-     * @param mixed $columns
-     */
-    public function setColumns($columns)
-    {
-        $this->columns = $columns;
-    }
-
-
-    /**
-     * @param Builder|Model $builder An eloquent model or eloquent builder.
-     * @param array $columns An array of columns which to return and to make searchable.
-     * @param callable|null $formatRowFunction A function to format the returned rows.
      * @return array
      * @throws Exception
      */
-    public function make($builder = null, $columns = null, $formatRowFunction = null)
+    public function make()
     {
-        if ( $builder !== null ) {
-            $this->setBuilder($builder);
-        }
-
-        if ( $columns !== null ) {
-            $this->columns = $columns;
-        }
-
-        if ( $formatRowFunction !== null ) {
-            $this->formatRowFunction = $formatRowFunction;
-        }
-
         $this->total = $this->builder->count();
 
         $this->rawColumns = $this->getRawColumns($this->columns);
@@ -110,16 +124,6 @@ class DataTable
             static::$versionTransformer->transform('recordsFiltered') => $this->filtered,
             static::$versionTransformer->transform('data') => $rows
         ];
-    }
-
-    /**
-     * @param callable $function
-     * @return $this
-     */
-    public function setFormatRowFunction($function)
-    {
-        $this->formatRowFunction = $function;
-        return $this;
     }
 
     private function formatRow($data)

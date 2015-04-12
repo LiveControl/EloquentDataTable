@@ -11,8 +11,8 @@ If you are familiar with eloquent and would like to use it in combination with [
 ### Step 2: Use it!
 ```php
 $users = new Models\User();
-$dataTable = new \LiveControl\EloquentDataTable\DataTable();
-echo json_encode($dataTable->make($users, ['email', 'firstname', 'lastname']));
+$dataTable = new \LiveControl\EloquentDataTable\DataTable($users, ['email', 'firstname', 'lastname']);
+echo json_encode($dataTable->make());
 ```
 
 ## Examples
@@ -33,10 +33,10 @@ class UserController {
   public function datatable()
   {
     $users = new User();
-    $dataTable = new DataTable();
-    
-    $dataTable->setBuilder($users->where('city', '=', 'London'));
-    $dataTable->setColumns(['email', 'firstname', 'lastname']);
+    $dataTable = new DataTable(
+      $users->where('city', '=', 'London'),
+      ['email', 'firstname', 'lastname']
+    );
     
     return response()->json($dataTable->make());
   }
@@ -56,10 +56,10 @@ class UserController {
   public function datatable()
   {
     $users = new User();
-    $dataTable = new DataTable();
-    
-    $dataTable->setBuilder($users);
-    $dataTable->setColumns(['email', ['firstname', 'lastname'], 'city']);
+    $dataTable = new DataTable(
+      $users
+      ['email', ['firstname', 'lastname'], 'city'],
+    );
     
     return response()->json($dataTable->make());
   }
@@ -79,14 +79,14 @@ class UserController {
   public function datatable()
   {
     $users = new User();
-    $dataTable = new DataTable();
-    
-    $dataTable->setBuilder($users);
-    $dataTable->setColumns([
-      'email',
-      new ExpressionWithName('`id` + 1000', 'idPlus1000'),
-      'city'
-    ]);
+    $dataTable = new DataTable(
+      $users,
+      [
+        'email',
+        new ExpressionWithName('`id` + 1000', 'idPlus1000'),
+        'city'
+      ]
+    );
     
     return response()->json($dataTable->make());
   }
@@ -106,10 +106,8 @@ class UserController {
   public function datatable()
   {
     $users = new User();
-    $dataTable = new DataTable();
+    $dataTable = new DataTable($users, ['email', ['firstname', 'lastname'], 'city']);
     
-    $dataTable->setBuilder($users);
-    $dataTable->setColumns(['email', ['firstname', 'lastname'], 'city']);
     $dataTable->setFormatRowFunction(function ($user) {
       $row = [];
       $row[] = $user->id;
