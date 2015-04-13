@@ -1,4 +1,4 @@
-# EloquentDataTable ![Build status](https://travis-ci.org/LiveControl/EloquentDataTable.svg?branch=master)
+# EloquentDataTable [![Build status](https://travis-ci.org/LiveControl/EloquentDataTable.svg?branch=master)](https://travis-ci.org/LiveControl/EloquentDataTable)
 Eloquent compatible DataTable plugin for server side ajax call handling.
 
 If you are familiar with eloquent and would like to use it in combination with [datatables](https://www.datatables.net/) this is what you are looking for.
@@ -24,9 +24,16 @@ var table = $('#example').DataTable({
 ### Step 3: Use it
 ```php
 $users = new Models\User();
-$dataTable = new \LiveControl\EloquentDataTable\DataTable($users, ['email', 'firstname', 'lastname']);
+$dataTable = new LiveControl\EloquentDataTable\DataTable($users, ['email', 'firstname', 'lastname']);
 echo json_encode($dataTable->make());
 ```
+
+### Optional step 4: Set versions of DataTables plugin.
+Just initialize the DataTable object as you would normally and call the setVersionTransformer function as in the following example (for version 1.09 of DataTables):
+```php
+$dataTable->setVersionTransformer(new LiveControl\EloquentDataTable\VersionTransformers\Version109Transformer());
+```
+By default the plugin will be loading the transformer which is compatible with DataTables version 1.10.
 
 ## Examples
 
