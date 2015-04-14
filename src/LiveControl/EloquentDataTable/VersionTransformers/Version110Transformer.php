@@ -17,7 +17,17 @@ class Version110Transformer implements VersionTransformerContract
 
     public function isColumnSearched($columnIndex)
     {
-        return (isset($_POST['columns']) && isset($_POST['columns'][$columnIndex]) && isset($_POST['columns'][$columnIndex]['searchable']) && $_POST['columns'][$columnIndex]['searchable'] == 'true');
+        return (
+            isset($_POST['columns'])
+            &&
+            isset($_POST['columns'][$columnIndex])
+            &&
+            isset($_POST['columns'][$columnIndex]['search'])
+            &&
+            isset($_POST['columns'][$columnIndex]['search']['value'])
+            &&
+            $_POST['columns'][$columnIndex]['search']['value'] != ''
+        );
     }
 
     public function getColumnSearchValue($columnIndex)

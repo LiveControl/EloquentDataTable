@@ -3,6 +3,7 @@
     "description": "Eloquent DataTable plugin for server side ajax call handling.",
     "keywords": [
         "eloquent",
+        "laravel",
         "datatable"
     ],
     "license": "MIT",
