@@ -8,7 +8,6 @@ class Version109Transformer implements VersionTransformerContract
         'recordsTotal' => 'iTotalRecords',
         'recordsFiltered' => 'iTotalDisplayRecords',
         'data' => 'aaData',
-
         'start' => 'iDisplayStart',
         'length' => 'iDisplayLength',
 

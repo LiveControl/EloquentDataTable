@@ -278,7 +278,7 @@ class DataTable
                 )]) && $_POST[static::$versionTransformer->transform('length')] != '-1'
         ) {
             $this->builder->skip((int)$_POST[static::$versionTransformer->transform('start')])->take(
-                (int)$_POST[static::$versionTransformer->transform('length')]
+                (int) $_POST[static::$versionTransformer->transform('length')]
             );
         }
     }
