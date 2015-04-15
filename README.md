@@ -56,7 +56,7 @@ class UserController {
       ['email', 'firstname', 'lastname']
     );
     
-    return response()->json($dataTable->make());
+    return $dataTable->make();
   }
 }
 ```
@@ -77,7 +77,7 @@ class UserController {
       ['email', ['firstname', 'lastname'], 'city']
     );
     
-    return response()->json($dataTable->make());
+    return $dataTable->make();
   }
 }
 ```
@@ -102,7 +102,7 @@ class UserController {
       ]
     );
     
-    return response()->json($dataTable->make());
+    return $dataTable->make();
   }
 }
 ```
@@ -111,7 +111,6 @@ class UserController {
 If you would like to return a custom row format you can do this by adding an anonymous function as an extra argument to the make method.
 ```php
 use LiveControl\EloquentDataTable\DataTable;
-use LiveControl\EloquentDataTable\ExpressionWithName;
 
 class UserController {
   ...
@@ -130,7 +129,7 @@ class UserController {
       ];
     });
     
-    return response()->json($dataTable->make());
+    return $dataTable->make();
   }
 }
 ```
