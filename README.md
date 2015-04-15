@@ -121,13 +121,13 @@ class UserController {
     $dataTable = new DataTable($users, ['email', ['firstname', 'lastname'], 'city']);
     
     $dataTable->setFormatRowFunction(function ($user) {
-      $row = [];
-      $row[] = $user->id;
-      $row[] = '<a href="/users/'.$user->id.'">'.$user->firstnameLastname.'</a>';
-      $row[] = '<a href="mailto:'.$user->email.'">'.$user->email.'</a>';
-      $row[] = $user->city;
-      $row[] = '<a href="/users/delete/'.$user->id.'">&times;</a>';
-      return $row;
+      return [
+        $user->id,
+        '<a href="/users/' . $user->id . '">' . $user->firstnameLastname . '</a>',
+        '<a href="mailto:' . $user->email . '">' . $user->email . '</a>',
+        $user->city,
+        '<a href="/users/delete/' . $user->id . '">&times;</a>'
+      ];
     });
     
     return response()->json($dataTable->make());

@@ -3,7 +3,8 @@ namespace LiveControl\EloquentDataTable;
 
 use Illuminate\Database\Query\Expression;
 
-class ExpressionWithName {
+class ExpressionWithName
+{
     private $expression;
     private $name;
 
