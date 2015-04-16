@@ -162,6 +162,12 @@ class DataTable
                 $names[] = $column->getName();
                 continue;
             }
+
+            if(is_string($column) && strstr($column, '.'))
+            {
+                $column = explode('.', $column);
+            }
+
             $names[] = (is_array($column) ? $this->arrayToCamelcase($column) : $column);
         }
         return $names;
