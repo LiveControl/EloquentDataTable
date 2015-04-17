@@ -243,8 +243,8 @@ class DataTable
     {
         $this->builder = $this->builder->where(
             function ($query) use ($search) {
-                foreach ($this->rawColumns as $rawColumn) {
-                    $query->orWhere(new raw($rawColumn), 'like', '%' . $search . '%');
+                foreach ($this->columnNames as $column) {
+                    $query->orWhere($column, 'like', '%' . $search . '%');
                 }
             }
         );
@@ -252,10 +252,10 @@ class DataTable
 
     private function addColumnFilters()
     {
-        foreach ($this->rawColumns as $i => $rawColumn) {
+        foreach ($this->columnNames as $i => $column) {
             if ( static::$versionTransformer->isColumnSearched($i) ) {
                 $this->builder->where(
-                    new raw($rawColumn),
+                    $column,
                     'like',
                     '%' . static::$versionTransformer->getColumnSearchValue($i) . '%'
                 );
@@ -267,9 +267,9 @@ class DataTable
     {
         if ( static::$versionTransformer->isOrdered() ) {
             foreach (static::$versionTransformer->getOrderedColumns() as $index => $direction) {
-                if ( isset($this->rawColumns[$index]) ) {
+                if ( isset($this->columnNames[$index]) ) {
                     $this->builder->orderBy(
-                        new raw($this->rawColumns[$index]),
+                        $this->columnNames[$index],
                         $direction
                     );
                 }
