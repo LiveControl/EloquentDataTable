@@ -102,10 +102,10 @@ class DataTable
 
         $this->addSelect();
         $this->addFilters();
-        $this->addOrderBy();
 
         $this->filtered = $this->builder->count();
 
+        $this->addOrderBy();
         $this->addLimits();
 
         $this->rows = $this->builder->get();
