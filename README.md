@@ -42,6 +42,7 @@ By default the plugin will be loading the transformer which is compatible with D
 - [Combining columns](#combining-columns)
 - [Using raw column queries](#using-raw-column-queries)
 - [Return custom row format](#return-custom-row-format)
+- [Showing results with relations](#showing-results-with-relations)
 
 ### Basic example
 ```php
@@ -118,7 +119,7 @@ class UserController {
   public function datatable()
   {
     $users = new User();
-    $dataTable = new DataTable($users, ['email', ['firstname', 'lastname'], 'city']);
+    $dataTable = new DataTable($users, ['id', ['firstname', 'lastname'], 'email', 'city']);
     
     $dataTable->setFormatRowFunction(function ($user) {
       return [
@@ -128,6 +129,35 @@ class UserController {
         $user->city,
         '<a href="/users/delete/' . $user->id . '">&times;</a>'
       ];
+    });
+    
+    return $dataTable->make();
+  }
+}
+```
+
+
+### Showing results with relations
+```php
+use LiveControl\EloquentDataTable\DataTable;
+
+class UserController {
+  ...
+  public function datatable()
+  {
+    $users = new User();
+    $dataTable = new DataTable(
+    	$users->with('country'),
+    	['name', 'country_id', 'email', 'id']
+    );
+    
+    $dataTable->setFormatRowFunction(function ($user) {
+    	return [
+    		'<a href="/users/'.$user->id.'">'.$user->name.'</a>',
+    		$user->country->name,
+    		'<a href="mailto:'.$user->email.'">'.$user->email.'</a>',
+    		'<a href="/users/delete/'.$user->id.'">&times;</a>'
+    	];
     });
     
     return $dataTable->make();
