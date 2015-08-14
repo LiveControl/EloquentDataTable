@@ -1,6 +1,7 @@
 <?php
 namespace LiveControl\EloquentDataTable;
 
+use Exception;
 use LiveControl\EloquentDataTable\VersionTransformers\Version110Transformer;
 use LiveControl\EloquentDataTable\VersionTransformers\VersionTransformerContract;
 
