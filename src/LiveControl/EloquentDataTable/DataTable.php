@@ -11,22 +11,22 @@ use LiveControl\EloquentDataTable\VersionTransformers\VersionTransformerContract
 
 class DataTable
 {
-    private $builder;
-    private $columns;
-    private $formatRowFunction;
+    protected $builder;
+    protected $columns;
+    protected $formatRowFunction;
 
     /**
      * @var VersionTransformerContract
      */
     protected static $versionTransformer;
 
-    private $rawColumns;
-    private $columnNames;
+    protected $rawColumns;
+    protected $columnNames;
 
-    private $total = 0;
-    private $filtered = 0;
+    protected $total = 0;
+    protected $filtered = 0;
 
-    private $rows = [];
+    protected $rows = [];
 
     /**
      * @param Builder|Model $builder
@@ -96,7 +96,7 @@ class DataTable
      */
     public function make()
     {
-        $this->total = $this->builder->count();
+        $this->total = $this->count();
 
         $this->rawColumns = $this->getRawColumns($this->columns);
         $this->columnNames = $this->getColumnNames();
@@ -108,7 +108,7 @@ class DataTable
         $this->addSelect();
         $this->addFilters();
 
-        $this->filtered = $this->builder->count();
+        $this->filtered = $this->count($this->builder);
 
         $this->addOrderBy();
         $this->addLimits();
@@ -130,11 +130,21 @@ class DataTable
         ];
     }
 
+    protected function count()
+    {
+        $query = (method_exists($this->builder, 'getQuery') ? $this->builder->getQuery() : $this->builder);
+        $pdo = $query->getConnection()->getPdo();
+        $countStatement = $pdo->prepare('SELECT count(*) as totalCount FROM ('.$query->toSql().') subQuery');
+        $countStatement->execute($query->getBindings());
+        $result = $countStatement->fetch();
+        return $result['totalCount'];
+    }
+
     /**
      * @param $data
      * @return array|mixed
      */
-    private function formatRow($data)
+    protected function formatRow($data)
     {
         // if we have a custom format row function we trigger it instead of the default handling.
         if ($this->formatRowFunction !== null) {
@@ -158,7 +168,7 @@ class DataTable
      * @param $data
      * @return mixed
      */
-    private function formatRowIndexes($data)
+    protected function formatRowIndexes($data)
     {
         if (isset($data['id'])) {
             $data[static::$versionTransformer->transform('DT_RowId')] = $data['id'];
@@ -169,7 +179,7 @@ class DataTable
     /**
      * @return array
      */
-    private function getColumnNames()
+    protected function getColumnNames()
     {
         $names = [];
         foreach ($this->columns as $index => $column) {
@@ -191,7 +201,7 @@ class DataTable
      * @param $columns
      * @return array
      */
-    private function getRawColumns($columns)
+    protected function getRawColumns($columns)
     {
         $rawColumns = [];
         foreach ($columns as $column) {
@@ -204,7 +214,7 @@ class DataTable
      * @param $column
      * @return raw|string
      */
-    private function getRawColumnQuery($column)
+    protected function getRawColumnQuery($column)
     {
         if ($column instanceof ExpressionWithName) {
             return $column->getExpression();
@@ -223,7 +233,7 @@ class DataTable
     /**
      * @return string
      */
-    private function getDatabaseDriver()
+    protected function getDatabaseDriver()
     {
         return Model::resolveConnection()->getDriverName();
     }
@@ -231,7 +241,7 @@ class DataTable
     /**
      *
      */
-    private function addSelect()
+    protected function addSelect()
     {
         $rawSelect = [];
         foreach ($this->columns as $index => $column) {
@@ -239,7 +249,7 @@ class DataTable
                 $rawSelect[] = $this->rawColumns[$index] . ' as ' . Model::resolveConnection()->getQueryGrammar()->wrap($this->columnNames[$index]);
             }
         }
-        $this->builder = $this->builder->select(new raw(implode(', ', $rawSelect)));
+        $this->builder = $this->builder->addSelect(new raw(implode(', ', $rawSelect)));
     }
 
     /**
@@ -247,7 +257,7 @@ class DataTable
      * @param bool|false $inForeach
      * @return array|string
      */
-    private function arrayToCamelcase($array, $inForeach = false)
+    protected function arrayToCamelcase($array, $inForeach = false)
     {
         $result = [];
         foreach ($array as $value) {
@@ -266,7 +276,7 @@ class DataTable
      * Add the filters based on the search value given.
      * @return $this
      */
-    private function addFilters()
+    protected function addFilters()
     {
         $search = static::$versionTransformer->getSearchValue();
         if ($search != '') {
@@ -280,7 +290,7 @@ class DataTable
      * Searches in all the columns.
      * @param $search
      */
-    private function addAllFilter($search)
+    protected function addAllFilter($search)
     {
         $this->builder = $this->builder->where(
             function ($query) use ($search) {
@@ -298,7 +308,7 @@ class DataTable
     /**
      * Add column specific filters.
      */
-    private function addColumnFilters()
+    protected function addColumnFilters()
     {
         foreach ($this->columns as $i => $column) {
             if (static::$versionTransformer->isColumnSearched($i)) {
@@ -331,7 +341,7 @@ class DataTable
     /**
      * Adds the pagination limits to the builder
      */
-    private function addLimits()
+    protected function addLimits()
     {
         if (isset($_POST[static::$versionTransformer->transform(
                     'start'
