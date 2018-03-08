@@ -96,19 +96,19 @@ class DataTable
      */
     public function make()
     {
-        $this->total = $this->count();
-
         $this->rawColumns = $this->getRawColumns($this->columns);
         $this->columnNames = $this->getColumnNames();
+
+        $this->addSelect();
+
+        $this->total = $this->count();
 
         if (static::$versionTransformer === null) {
             static::$versionTransformer = new Version110Transformer();
         }
-
-        $this->addSelect();
         $this->addFilters();
 
-        $this->filtered = $this->count($this->builder);
+        $this->filtered = $this->count();
 
         $this->addOrderBy();
         $this->addLimits();
