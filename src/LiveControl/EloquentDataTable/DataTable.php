@@ -134,8 +134,15 @@ class DataTable
     {
         $query = (method_exists($this->builder, 'getQuery') ? $this->builder->getQuery() : $this->builder);
         $pdo = $query->getConnection()->getPdo();
-        $countStatement = $pdo->prepare('SELECT count(*) as totalCount FROM ('.$query->toSql().') subQuery');
-        $countStatement->execute($query->getBindings());
+
+        try {
+            $countStatement = $pdo->prepare('SELECT count(*) as totalCount FROM ('.$this->builder->toSql().') subQuery');
+            $countStatement->execute($this->builder->getBindings());
+        } catch (Exception $e) {
+            $countStatement = $pdo->prepare('SELECT count(*) as totalCount FROM ('.$query->toSql().') subQuery');
+            $countStatement->execute($query->getBindings());
+        }
+        
         $result = $countStatement->fetch();
         return $result['totalCount'];
     }
