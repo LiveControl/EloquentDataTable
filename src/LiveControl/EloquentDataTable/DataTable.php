@@ -253,7 +253,7 @@ class DataTable
         $rawSelect = [];
         foreach ($this->columns as $index => $column) {
             if (isset($this->rawColumns[$index])) {
-                $rawSelect[] = $this->rawColumns[$index] . ' as ' . Model::resolveConnection()->getQueryGrammar()->wrap($this->columnNames[$index]);
+                $rawSelect[] = trim($this->rawColumns[$index], '`') . ' as ' . trim(Model::resolveConnection()->getQueryGrammar()->wrap($this->columnNames[$index]), '`');
             }
         }
         $this->builder = $this->builder->addSelect(new raw(implode(', ', $rawSelect)));
@@ -303,7 +303,7 @@ class DataTable
             function ($query) use ($search) {
                 foreach ($this->columns as $column) {
                     $query->orWhere(
-                        new raw($this->getRawColumnQuery($column)),
+                        trim(new raw($this->getRawColumnQuery($column)), '`'),
                         'like',
                         '%' . $search . '%'
                     );
@@ -320,7 +320,7 @@ class DataTable
         foreach ($this->columns as $i => $column) {
             if (static::$versionTransformer->isColumnSearched($i)) {
                 $this->builder->where(
-                    new raw($this->getRawColumnQuery($column)),
+                    trim(new raw($this->getRawColumnQuery($column)), '`'),
                     'like',
                     '%' . static::$versionTransformer->getColumnSearchValue($i) . '%'
                 );
