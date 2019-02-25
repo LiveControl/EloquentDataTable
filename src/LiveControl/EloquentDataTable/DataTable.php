@@ -234,7 +234,7 @@ class DataTable
             return 'CONCAT(' . implode(', " ", ', $this->getRawColumns($column)) . ')';
         }
 
-        return Model::resolveConnection()->getQueryGrammar()->wrap($column);
+        return $this->builder->getConnection()->getQueryGrammar()->wrap($column);
     }
 
     /**
@@ -242,7 +242,7 @@ class DataTable
      */
     protected function getDatabaseDriver()
     {
-        return Model::resolveConnection()->getDriverName();
+        return $this->builder->getConnection()->getDriverName();
     }
 
     /**
@@ -253,7 +253,7 @@ class DataTable
         $rawSelect = [];
         foreach ($this->columns as $index => $column) {
             if (isset($this->rawColumns[$index])) {
-                $rawSelect[] = $this->rawColumns[$index] . ' as ' . Model::resolveConnection()->getQueryGrammar()->wrap($this->columnNames[$index]);
+                $rawSelect[] = $this->rawColumns[$index] . ' as ' . $this->builder->getConnection()->getQueryGrammar()->wrap($this->columnNames[$index]);
             }
         }
         $this->builder = $this->builder->addSelect(new raw(implode(', ', $rawSelect)));
