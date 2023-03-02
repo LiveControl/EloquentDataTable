@@ -18,6 +18,10 @@ class Version109Transformer implements VersionTransformerContract
         return (isset($this->translate[$name]) ? $this->translate[$name] : $name);
     }
 
+    public function isSearchRegex()
+    {
+        return false;
+    }
     public function getSearchValue()
     {
         if(isset($_POST['sSearch']))
@@ -28,6 +32,11 @@ class Version109Transformer implements VersionTransformerContract
     public function isColumnSearched($i)
     {
         return (isset($_POST['bSearchable_' . $i]) && $_POST['bSearchable_' . $i] == 'true' && $_POST['sSearch_' . $i] != '');
+    }
+
+    public function isColumnSearchRegex($columnIndex)
+    {
+        return false;
     }
 
     public function getColumnSearchValue($i)
