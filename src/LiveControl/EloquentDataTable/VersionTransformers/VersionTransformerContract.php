@@ -5,9 +5,11 @@ interface VersionTransformerContract
 {
     public function transform($name);
 
+    public function isSearchRegex();
     public function getSearchValue();
 
     public function isColumnSearched($columnIndex);
+    public function isColumnSearchRegex($columnIndex);
     public function getColumnSearchValue($columnIndex);
 
 

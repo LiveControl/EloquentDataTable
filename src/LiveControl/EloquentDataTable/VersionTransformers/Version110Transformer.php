@@ -8,6 +8,13 @@ class Version110Transformer implements VersionTransformerContract
         return $name; // we use the same as the requested name
     }
 
+    public function isSearchRegex()
+    {
+        if(isset($_POST['search']) && isset($_POST['search']['regex']))
+            return $_POST['search']['regex'];
+        return false;
+    }
+
     public function getSearchValue()
     {
         if(isset($_POST['search']) && isset($_POST['search']['value']))
@@ -28,6 +35,11 @@ class Version110Transformer implements VersionTransformerContract
             &&
             $_POST['columns'][$columnIndex]['search']['value'] != ''
         );
+    }
+
+    public function isColumnSearchRegex($columnIndex)
+    {
+        return $_POST['columns'][$columnIndex]['search']['regex'];
     }
 
     public function getColumnSearchValue($columnIndex)

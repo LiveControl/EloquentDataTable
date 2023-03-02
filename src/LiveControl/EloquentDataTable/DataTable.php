@@ -13,6 +13,7 @@ class DataTable
 {
     protected $builder;
     protected $columns;
+    protected $orderPossibilities;
     protected $formatRowFunction;
 
     /**
@@ -22,6 +23,7 @@ class DataTable
 
     protected $rawColumns;
     protected $columnNames;
+    protected $orderNames;
 
     protected $total = 0;
     protected $filtered = 0;
@@ -34,10 +36,11 @@ class DataTable
      * @param null|callable $formatRowFunction
      * @throws Exception
      */
-    public function __construct($builder, $columns, $formatRowFunction = null)
+    public function __construct($builder, $columns, $orderPossibilities = null, $formatRowFunction = null)
     {
         $this->setBuilder($builder);
         $this->setColumns($columns);
+        $this->setOrderPossibilities($orderPossibilities);
 
         if ($formatRowFunction !== null) {
             $this->setFormatRowFunction($formatRowFunction);
@@ -70,6 +73,20 @@ class DataTable
     }
 
     /**
+     * @param mixed $columns
+     * @return $this
+     */
+    public function setOrderPossibilities($columns)
+    {
+        if ( $columns !== null ) {
+            $this->orderPossibilities = $columns;
+        } else {
+            $this->orderPossibilities = $this->columns;
+        }
+        return $this;
+    }
+
+    /**
      * @param callable $function
      * @return $this
      */
@@ -97,7 +114,8 @@ class DataTable
     public function make()
     {
         $this->rawColumns = $this->getRawColumns($this->columns);
-        $this->columnNames = $this->getColumnNames();
+        $this->columnNames = $this->getColumnNames($this->columns);
+        $this->orderNames = $this->getColumnNames($this->orderPossibilities);
 
         $this->addSelect();
 
@@ -142,7 +160,7 @@ class DataTable
             $countStatement = $pdo->prepare('SELECT count(*) as totalCount FROM ('.$query->toSql().') subQuery');
             $countStatement->execute($query->getBindings());
         }
-        
+
         $result = $countStatement->fetch();
         return $result['totalCount'];
     }
@@ -186,10 +204,10 @@ class DataTable
     /**
      * @return array
      */
-    protected function getColumnNames()
+    protected function getColumnNames($columns)
     {
         $names = [];
-        foreach ($this->columns as $index => $column) {
+        foreach ($columns as $index => $column) {
             if ($column instanceof ExpressionWithName) {
                 $names[] = $column->getName();
                 continue;
@@ -286,8 +304,9 @@ class DataTable
     protected function addFilters()
     {
         $search = static::$versionTransformer->getSearchValue();
+        $regex = static::$versionTransformer->isSearchRegex();
         if ($search != '') {
-            $this->addAllFilter($search);
+            $this->addAllFilter($search, $regex);
         }
         $this->addColumnFilters();
         return $this;
@@ -296,16 +315,17 @@ class DataTable
     /**
      * Searches in all the columns.
      * @param $search
+     * @param $regex
      */
-    protected function addAllFilter($search)
+    protected function addAllFilter($search, $regex)
     {
         $this->builder = $this->builder->where(
-            function ($query) use ($search) {
+            function ($query) use ($search, $regex) {
                 foreach ($this->columns as $column) {
                     $query->orWhere(
                         new raw($this->getRawColumnQuery($column)),
-                        'like',
-                        '%' . $search . '%'
+                        $regex ? 'rlike' : 'like',
+                        $regex ? $search : '%' . $search . '%'
                     );
                 }
             }
@@ -319,10 +339,11 @@ class DataTable
     {
         foreach ($this->columns as $i => $column) {
             if (static::$versionTransformer->isColumnSearched($i)) {
+                $regex = static::$versionTransformer->isColumnSearchRegex($i);
                 $this->builder->where(
                     new raw($this->getRawColumnQuery($column)),
-                    'like',
-                    '%' . static::$versionTransformer->getColumnSearchValue($i) . '%'
+                    $regex ? 'rlike' : 'like',
+                    $regex ? static::$versionTransformer->getColumnSearchValue($i) : '%' . static::$versionTransformer->getColumnSearchValue($i) . '%'
                 );
             }
         }
@@ -335,9 +356,9 @@ class DataTable
     {
         if (static::$versionTransformer->isOrdered()) {
             foreach (static::$versionTransformer->getOrderedColumns() as $index => $direction) {
-                if (isset($this->columnNames[$index])) {
+                if (isset($this->orderNames[$index])) {
                     $this->builder->orderBy(
-                        $this->columnNames[$index],
+                        $this->orderNames[$index],
                         $direction
                     );
                 }
