@@ -5,6 +5,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Expression as raw;
+use Illuminate\Support\Str;
 use LiveControl\EloquentDataTable\VersionTransformers\Version110Transformer;
 use LiveControl\EloquentDataTable\VersionTransformers\VersionTransformerContract;
 
@@ -294,7 +295,7 @@ class DataTable
             $result[] = $value;
         }
 
-        return (! $inForeach ? camel_case(implode('_', $result)) : $result);
+        return (! $inForeach ? Str::camel(implode('_', $result)) : $result);
     }
 
     /**
