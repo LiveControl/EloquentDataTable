@@ -13,43 +13,43 @@ class Version109Transformer implements VersionTransformerContract
 
     ];
 
-    public function transform($name)
+    public function transform($name): string
     {
         return (isset($this->translate[$name]) ? $this->translate[$name] : $name);
     }
 
-    public function isSearchRegex()
+    public function isSearchRegex(): bool
     {
         return false;
     }
-    public function getSearchValue()
+    public function getSearchValue(): string
     {
         if(isset($_POST['sSearch']))
             return $_POST['sSearch'];
         return '';
     }
 
-    public function isColumnSearched($i)
+    public function isColumnSearched($i): bool
     {
         return (isset($_POST['bSearchable_' . $i]) && $_POST['bSearchable_' . $i] == 'true' && $_POST['sSearch_' . $i] != '');
     }
 
-    public function isColumnSearchRegex($columnIndex)
+    public function isColumnSearchRegex($columnIndex): bool
     {
         return false;
     }
 
-    public function getColumnSearchValue($i)
+    public function getColumnSearchValue($i): string
     {
         return $_POST['sSearch_' . $i];
     }
 
-    public function isOrdered()
+    public function isOrdered(): bool
     {
         return isset($_POST['iSortCol_0']);
     }
 
-    public function getOrderedColumns()
+    public function getOrderedColumns(): array
     {
         $columns = [];
         for ($i = 0; $i < (int) $_POST['iSortingCols']; $i ++) {
