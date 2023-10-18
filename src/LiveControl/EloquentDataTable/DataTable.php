@@ -343,9 +343,9 @@ class DataTable
     {
         $method = $aggregate ? 'Having' : 'Where';
         $this->builder = $this->builder->{strtolower($method)}(
-            function ($query) use ($search, $regex) {
+            function ($query) use ($search, $regex, $method) {
                 foreach ($this->columns as $column) {
-                    $query->{"or"$method}(
+                    $query->{"or$method"}(
                         new raw($this->getRawColumnQuery($column)),
                         $regex ? 'rlike' : 'like',
                         $regex ? $search : '%' . $search . '%'
