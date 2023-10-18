@@ -31,6 +31,11 @@ class DataTable
 
     protected $rows = [];
 
+    protected $mySqlAggFncs = [
+        "AVG(","BIT_AND(","BIT_OR(","BIT_XOR(","COUNT(","GROUP_CONCAT(","JSON_ARRAYAGG(","JSON_OBJECTAGG(","MAX(",
+        "MIN(","STD(","STDDEV(","STDDEV_POP(","STDDEV_SAMP(","SUM(","VAR_POP(","VAR_SAMP(","VARIANCE("
+    ];
+
     /**
      * @param Builder|Model $builder
      * @param array $columns
@@ -299,6 +304,21 @@ class DataTable
     }
 
     /**
+     * Checks if the query includes aggregate functions
+     * @return bool
+     */
+    protected function hasAggregateFunction() 
+    {
+        $query = $this->builder->toSql() ?? $this->builder->getQuery()->toSql();
+        foreach($this->mySqlAggFncs as $aggFnc) {
+            if (stripos($query, $aggFnc) !== false) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Add the filters based on the search value given.
      * @return $this
      */
@@ -306,10 +326,11 @@ class DataTable
     {
         $search = static::$versionTransformer->getSearchValue();
         $regex = static::$versionTransformer->isSearchRegex();
+        $aggregate = $this->hasAggregateFunction();
         if ($search != '') {
-            $this->addAllFilter($search, $regex);
+            $this->addAllFilter($search, $regex, $aggregate);
         }
-        $this->addColumnFilters();
+        $this->addColumnFilters($aggregate);
         return $this;
     }
 
@@ -318,12 +339,13 @@ class DataTable
      * @param $search
      * @param $regex
      */
-    protected function addAllFilter($search, $regex)
+    protected function addAllFilter($search, $regex, $aggregate)
     {
-        $this->builder = $this->builder->where(
+        $method = $aggregate ? 'Having' : 'Where';
+        $this->builder = $this->builder->{strtolower($method)}(
             function ($query) use ($search, $regex) {
                 foreach ($this->columns as $column) {
-                    $query->orWhere(
+                    $query->{"or"$method}(
                         new raw($this->getRawColumnQuery($column)),
                         $regex ? 'rlike' : 'like',
                         $regex ? $search : '%' . $search . '%'
@@ -336,12 +358,13 @@ class DataTable
     /**
      * Add column specific filters.
      */
-    protected function addColumnFilters()
+    protected function addColumnFilters($aggregate)
     {
         foreach ($this->columns as $i => $column) {
             if (static::$versionTransformer->isColumnSearched($i)) {
                 $regex = static::$versionTransformer->isColumnSearchRegex($i);
-                $this->builder->where(
+                $method = $aggregate ? 'having' : 'where';
+                $this->builder->{$method}(
                     new raw($this->getRawColumnQuery($column)),
                     $regex ? 'rlike' : 'like',
                     $regex ? static::$versionTransformer->getColumnSearchValue($i) : '%' . static::$versionTransformer->getColumnSearchValue($i) . '%'
