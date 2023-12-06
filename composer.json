@@ -1,5 +1,5 @@
 {
-    "name": "livecontrol/eloquent-datatable",
+    "name": "schoppax/eloquent-datatable",
     "description": "Eloquent DataTable plugin for server side ajax call handling.",
     "keywords": [
         "eloquent",
@@ -15,7 +15,7 @@
     ],
     "require": {
         "php": ">=5.4.0",
-        "illuminate/database": "5.*"
+        "illuminate/database": "^5.7|^6.0|^7.0|^8.0|^9.0"
     },
     "require-dev": {
         "phpspec/phpspec": "~2.1"

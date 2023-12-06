@@ -5,6 +5,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Expression as raw;
+use Illuminate\Support\Str;
 use LiveControl\EloquentDataTable\VersionTransformers\Version110Transformer;
 use LiveControl\EloquentDataTable\VersionTransformers\VersionTransformerContract;
 
@@ -13,6 +14,7 @@ class DataTable
 {
     protected $builder;
     protected $columns;
+    protected $orderPossibilities;
     protected $formatRowFunction;
 
     /**
@@ -22,11 +24,17 @@ class DataTable
 
     protected $rawColumns;
     protected $columnNames;
+    protected $orderNames;
 
     protected $total = 0;
     protected $filtered = 0;
 
     protected $rows = [];
+
+    protected $mySqlAggFncs = [
+        "AVG(","BIT_AND(","BIT_OR(","BIT_XOR(","COUNT(","GROUP_CONCAT(","JSON_ARRAYAGG(","JSON_OBJECTAGG(","MAX(",
+        "MIN(","STD(","STDDEV(","STDDEV_POP(","STDDEV_SAMP(","SUM(","VAR_POP(","VAR_SAMP(","VARIANCE("
+    ];
 
     /**
      * @param Builder|Model $builder
@@ -34,10 +42,11 @@ class DataTable
      * @param null|callable $formatRowFunction
      * @throws Exception
      */
-    public function __construct($builder, $columns, $formatRowFunction = null)
+    public function __construct($builder, $columns, $orderPossibilities = null, $formatRowFunction = null)
     {
         $this->setBuilder($builder);
         $this->setColumns($columns);
+        $this->setOrderPossibilities($orderPossibilities);
 
         if ($formatRowFunction !== null) {
             $this->setFormatRowFunction($formatRowFunction);
@@ -70,6 +79,20 @@ class DataTable
     }
 
     /**
+     * @param mixed $columns
+     * @return $this
+     */
+    public function setOrderPossibilities($columns)
+    {
+        if ( $columns !== null ) {
+            $this->orderPossibilities = $columns;
+        } else {
+            $this->orderPossibilities = $this->columns;
+        }
+        return $this;
+    }
+
+    /**
      * @param callable $function
      * @return $this
      */
@@ -97,7 +120,8 @@ class DataTable
     public function make()
     {
         $this->rawColumns = $this->getRawColumns($this->columns);
-        $this->columnNames = $this->getColumnNames();
+        $this->columnNames = $this->getColumnNames($this->columns);
+        $this->orderNames = $this->getColumnNames($this->orderPossibilities);
 
         $this->addSelect();
 
@@ -142,7 +166,7 @@ class DataTable
             $countStatement = $pdo->prepare('SELECT count(*) as totalCount FROM ('.$query->toSql().') subQuery');
             $countStatement->execute($query->getBindings());
         }
-        
+
         $result = $countStatement->fetch();
         return $result['totalCount'];
     }
@@ -186,10 +210,10 @@ class DataTable
     /**
      * @return array
      */
-    protected function getColumnNames()
+    protected function getColumnNames($columns)
     {
         $names = [];
-        foreach ($this->columns as $index => $column) {
+        foreach ($columns as $index => $column) {
             if ($column instanceof ExpressionWithName) {
                 $names[] = $column->getName();
                 continue;
@@ -276,7 +300,22 @@ class DataTable
             $result[] = $value;
         }
 
-        return (! $inForeach ? camel_case(implode('_', $result)) : $result);
+        return (! $inForeach ? Str::camel(implode('_', $result)) : $result);
+    }
+
+    /**
+     * Checks if the query includes aggregate functions
+     * @return bool
+     */
+    protected function hasAggregateFunction() 
+    {
+        $query = $this->builder->toSql() ?? $this->builder->getQuery()->toSql();
+        foreach($this->mySqlAggFncs as $aggFnc) {
+            if (stripos($query, $aggFnc) !== false) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -286,26 +325,30 @@ class DataTable
     protected function addFilters()
     {
         $search = static::$versionTransformer->getSearchValue();
+        $regex = static::$versionTransformer->isSearchRegex();
+        $aggregate = $this->hasAggregateFunction();
         if ($search != '') {
-            $this->addAllFilter($search);
+            $this->addAllFilter($search, $regex, $aggregate);
         }
-        $this->addColumnFilters();
+        $this->addColumnFilters($aggregate);
         return $this;
     }
 
     /**
      * Searches in all the columns.
      * @param $search
+     * @param $regex
      */
-    protected function addAllFilter($search)
+    protected function addAllFilter($search, $regex, $aggregate)
     {
-        $this->builder = $this->builder->where(
-            function ($query) use ($search) {
+        $method = $aggregate ? 'Having' : 'Where';
+        $this->builder = $this->builder->{strtolower($method)}(
+            function ($query) use ($search, $regex, $method) {
                 foreach ($this->columns as $column) {
-                    $query->orWhere(
+                    $query->{"or$method"}(
                         new raw($this->getRawColumnQuery($column)),
-                        'like',
-                        '%' . $search . '%'
+                        $regex ? 'rlike' : 'like',
+                        $regex ? $search : '%' . $search . '%'
                     );
                 }
             }
@@ -315,14 +358,16 @@ class DataTable
     /**
      * Add column specific filters.
      */
-    protected function addColumnFilters()
+    protected function addColumnFilters($aggregate)
     {
         foreach ($this->columns as $i => $column) {
             if (static::$versionTransformer->isColumnSearched($i)) {
-                $this->builder->where(
+                $regex = static::$versionTransformer->isColumnSearchRegex($i);
+                $method = $aggregate ? 'having' : 'where';
+                $this->builder->{$method}(
                     new raw($this->getRawColumnQuery($column)),
-                    'like',
-                    '%' . static::$versionTransformer->getColumnSearchValue($i) . '%'
+                    $regex ? 'rlike' : 'like',
+                    $regex ? static::$versionTransformer->getColumnSearchValue($i) : '%' . static::$versionTransformer->getColumnSearchValue($i) . '%'
                 );
             }
         }
@@ -335,9 +380,9 @@ class DataTable
     {
         if (static::$versionTransformer->isOrdered()) {
             foreach (static::$versionTransformer->getOrderedColumns() as $index => $direction) {
-                if (isset($this->columnNames[$index])) {
+                if (isset($this->orderNames[$index])) {
                     $this->builder->orderBy(
-                        $this->columnNames[$index],
+                        $this->orderNames[$index],
                         $direction
                     );
                 }

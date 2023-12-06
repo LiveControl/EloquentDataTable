@@ -3,19 +3,26 @@ namespace LiveControl\EloquentDataTable\VersionTransformers;
 
 class Version110Transformer implements VersionTransformerContract
 {
-    public function transform($name)
+    public function transform($name): string
     {
         return $name; // we use the same as the requested name
     }
 
-    public function getSearchValue()
+    public function isSearchRegex(): bool
+    {
+        if(isset($_POST['search']) && isset($_POST['search']['regex']))
+            return filter_var($_POST['search']['regex'], FILTER_VALIDATE_BOOLEAN);
+        return false;
+    }
+
+    public function getSearchValue(): string
     {
         if(isset($_POST['search']) && isset($_POST['search']['value']))
             return $_POST['search']['value'];
         return '';
     }
 
-    public function isColumnSearched($columnIndex)
+    public function isColumnSearched($columnIndex): bool
     {
         return (
             isset($_POST['columns'])
@@ -30,17 +37,24 @@ class Version110Transformer implements VersionTransformerContract
         );
     }
 
-    public function getColumnSearchValue($columnIndex)
+    public function isColumnSearchRegex($columnIndex): bool
+    {
+        if (isset($_POST['columns'][$columnIndex]['search']['regex']))
+            return filter_var($_POST['columns'][$columnIndex]['search']['regex'], FILTER_VALIDATE_BOOLEAN);
+        return false;
+    }
+
+    public function getColumnSearchValue($columnIndex): string
     {
         return $_POST['columns'][$columnIndex]['search']['value'];
     }
 
-    public function isOrdered()
+    public function isOrdered(): bool
     {
         return (isset($_POST['order']) && isset($_POST['order'][0]));
     }
 
-    public function getOrderedColumns()
+    public function getOrderedColumns(): array
     {
         $columns = [];
         foreach($_POST['order'] as $i => $order)
